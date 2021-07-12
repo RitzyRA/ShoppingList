@@ -1,0 +1,83 @@
+{
+  "products": [
+    {
+      "title": "Pants",
+      "count": "100",
+      "price": "66.99",
+      "id": 3
+    },
+    {
+      "title": "Dress",
+      "count": 20,
+      "price": 50,
+      "id": 9
+    },
+    {
+      "title": "Socks",
+      "count": 6,
+      "price": 5,
+      "id": 11
+    },
+    {
+      "title": "Dress",
+      "count": "2",
+      "price": "2",
+      "id": 14
+    },
+    {
+      "title": "Skirts",
+      "count": 2,
+      "price": 50,
+      "id": 15
+    },
+    {
+      "title": "Dress",
+      "count": 5,
+      "price": 60,
+      "id": 16
+    },
+    {
+      "title": "Shirt",
+      "count": 1,
+      "price": 10,
+      "id": 17
+    },
+    {
+      "title": "Skirts",
+      "count": 2,
+      "price": 50,
+      "id": 18
+    },
+    {
+      "title": "Skirts",
+      "count": 2,
+      "price": 50,
+      "id": 19
+    },
+    {
+      "title": "Skirts",
+      "count": 2,
+      "price": 50,
+      "id": 20
+    },
+    {
+      "title": "Skirts",
+      "count": "2",
+      "price": "100",
+      "id": 21
+    },
+    {
+      "title": "Skirts",
+      "count": 2,
+      "price": 50,
+      "id": 22
+    }
+  ],
+  "comments": [
+    {
+      "id": 2,
+      "text": "Sudie, pasauli!",
+      "productId": 3
+    }
+  ]
+}

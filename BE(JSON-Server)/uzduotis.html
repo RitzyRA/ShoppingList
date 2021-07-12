@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+</head>
+
+<body>
+    <header id="main-header" class="bg-success text-white p-4 mb-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 id="header-title">Item Lister</h1>
+                </div>
+                <div class="col-md-6 align-self-center">
+                    <input type="text" class="form-control" id="filter" placeholder="Search Items..." />
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <div id="main" class="card card-body">
+            <h2 class="title">Add Items</h2>
+            <form id="addForm" class="form-inline mb-3 justify-content-between">
+                <div>Enter name: </div>
+                <input type="text" class="form-control mr-2" id="itemTitle" />
+                <div>Enter quantity: </div>
+                <input type="number" class="form-control mr-2" id="itemCount" />
+                <div>Enter price, €: </div>
+                <input type="number" class="form-control mr-2" id="itemPrice" />
+                <input type="submit" class="btn btn-dark" value="Submit" />
+            </form>
+            <h2 class="title">Items</h2>
+            <ul id="items" class="list-group"></ul>
+            <div class="list-group-item flex-column form-inline">
+                <input type="number" class="form-control float-right d-flex align-self-center justify-content-center" id="totalPrice" readonly/>
+                <p class="float-right d-flex mr-2 mt-1">Total:</p>
+                
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    var form = document.getElementById("addForm");
+    var itemList = document.getElementById("items");
+    var filter = document.getElementById("filter");
+
+    form.addEventListener("submit", addItem);
+    filter.addEventListener("keyup", filterItems);
+    itemList.addEventListener("click", updateItem);
+
+
+    function loadItems() {
+        fetch("http://localhost:3000/products")
+            .then(resp => resp.json())
+            .then(data => {
+                data.forEach(item => {
+                    createItem(item);
+                });
+                calcSum(data);
+            });
+    }
+
+    function addItem(e) {
+        e.preventDefault();
+        createItem();        
+    }
+
+    function createItem(item = undefined) {
+        var newItem;
+        if (!item) {
+            newItem = document.getElementById("itemTitle").value;
+            fetch("http://localhost:3000/products/", {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "title": document.getElementById("itemTitle").value,
+                    "count": parseInt(document.getElementById("itemCount").value),
+                    "price": parseInt(document.getElementById("itemPrice").value)
+                })
+            })
+        } else {
+            newItem = item.title;
+        }
+
+        var li = document.createElement("li");
+        li.className = "list-group-item flex-column form-inline";
+
+        li.appendChild(document.createTextNode("Name: "));
+        var inputTitle = document.createElement("input");
+        inputTitle.className = "inputTitle form-control col-3";
+        inputTitle.readOnly = true;
+        inputTitle.value = newItem;
+        inputTitle.id = "title" + item.id;
+        li.appendChild(inputTitle);
+
+        li.appendChild(document.createTextNode(" Quantity: "));
+        var inputCount = document.createElement("input");
+        inputCount.className = "inputCount form-control col-2";
+        inputCount.readOnly = true;
+        inputCount.type = "number";
+        inputCount.id = "count" + item.id;
+        inputCount.value = item.count;
+        li.appendChild(inputCount);
+
+        li.appendChild(document.createTextNode(" Price (€): "));
+        var inputPrice = document.createElement("input");
+        inputPrice.className = "inputPrice form-control col-2";
+        inputPrice.readOnly = true;
+        inputPrice.type = "number";
+        inputPrice.id = "price" + item.id;
+        inputPrice.value = item.price;
+        li.appendChild(inputPrice);
+
+        var deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn btn-danger btn-sm float-right delete";
+        deleteBtn.id = item.id;
+        deleteBtn.onclick = function () { removeFromBE(this) };
+        deleteBtn.appendChild(document.createTextNode("X"));
+        li.appendChild(deleteBtn);
+        itemList.appendChild(li);
+
+        var updateBtn = document.createElement("button");
+        updateBtn.className = "btn btn-warning btn-sm float-right mx-2 update";
+        updateBtn.id = "update" + item.id;
+        updateBtn.appendChild(document.createTextNode("Update"));
+        li.appendChild(updateBtn);
+        itemList.appendChild(li);
+
+        var saveBtn = document.createElement("button");
+        saveBtn.className = "btn btn-secondary btn-sm float-right mx-2 save";
+        saveBtn.style.display = "none";
+        saveBtn.id = "save" + item.id;
+        saveBtn.onclick = function () { saveChanges(this) };
+        saveBtn.appendChild(document.createTextNode("Save"));
+        li.appendChild(saveBtn);
+        itemList.appendChild(li);
+    }
+
+    // function removeItem(e) {
+    //     if (e.target.classList.contains("delete")) {
+    //         if (confirm("Are You Sure?")) {
+    //             var liToRemove = e.target.parentElement;
+    //             itemList.removeChild(liToRemove);
+    //         }
+    //     }
+    // }
+
+    function removeFromBE(e) {
+        if (confirm("Are You Sure?")) {
+            fetch("http://localhost:3000/products/" + e.id, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            })
+            var liToRemove = e.target.parentElement;
+            itemList.removeChild(liToRemove);
+        }
+    }
+
+    function updateItem(e) {
+        if (e.target.classList.contains("update")) {
+            let id = e.target.id.replace(/\D/g, "");
+            document.getElementById("title" + id).readOnly = false;
+            document.getElementById("title" + id).className = "inputTitle form-control col-3 text-dark";
+            document.getElementById("count" + id).readOnly = false;
+            document.getElementById("count" + id).className = "inputCount form-control col-2 text-dark";
+            document.getElementById("price" + id).readOnly = false;
+            document.getElementById("price" + id).className = "inputPrice form-control col-2 text-dark";
+            document.getElementById(e.target.id).style.display = "none";
+            document.getElementById("save" + id).style.display = "block";
+        }
+    }
+
+    function saveChanges(e) {
+        console.log(e.id);
+        let id = e.id.replace(/\D/g, "");
+        let title = document.getElementById("title" + id).value;
+        let count = document.getElementById("count" + id).value;
+        let price = document.getElementById("price" + id).value;
+        fetch("http://localhost:3000/products/" + id, {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                "title": title,
+                "count": count,
+                "price": price
+            })
+        }).then(() => {
+            document.getElementById("title" + id).readOnly = true;
+            document.getElementById("title" + id).className = "inputTitle form-control col-3";
+            document.getElementById("count" + id).readOnly = true;
+            document.getElementById("count" + id).className = "inputCount form-control col-2";
+            document.getElementById("price" + id).readOnly = true;
+            document.getElementById("price" + id).className = "inputPrice form-control col-2";
+            document.getElementById(e.target.id).style.display = "block";
+            document.getElementById("save" + id).style.display = "none";
+        });
+    }
+
+    function filterItems(e) {
+        var text = e.target.value.toLowerCase();
+        var items = itemList.getElementsByTagName("li");
+        Array.from(items).forEach(function (item) {
+            var itemName = item.firstChild.textContent;
+            if (itemName.toLowerCase().indexOf(text) != -1) {
+                item.style.display = "block";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    }
+
+    function calcSum(item) {
+        let sum = 0;
+        for (var i=0; i < item.length; i++) {
+            sum = sum + item[i].count * item[i].price;
+        }
+        document.getElementById("totalPrice").value = sum;
+    }
+
+    loadItems();
+</script>
+
+</html>
